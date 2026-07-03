@@ -1,0 +1,131 @@
+---
+import WisMark from '@/components/WisMark.astro'
+import { REPO_URL } from '@/lib/site'
+
+const base = import.meta.env.BASE_URL
+const docsUrl = `${base}docs/`
+---
+
+<header class="nav-wrap">
+  <nav class="nav container" aria-label="main">
+    <a class="brand" href={base}>
+      <WisMark variant="solid-open" size={24} />
+      <span>wis</span>
+    </a>
+    <div class="links">
+      <a class="u-link" href="#features">features</a>
+      <a class="u-link" href="#privacy">privacy</a>
+      <a class="u-link" href={docsUrl}>docs</a>
+      <a class="u-link" href={REPO_URL} rel="noopener">github</a>
+    </div>
+    <a class="dl-pill" href="#download">download</a>
+  </nav>
+</header>
+
+<style>
+  .nav-wrap {
+    position: fixed;
+    top: 14px;
+    left: 0;
+    right: 0;
+    z-index: 50;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 56px;
+    padding-inline: 22px;
+    border-radius: 16px;
+    background: rgba(8, 8, 13, 0.66);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .dl-pill {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--lila-400);
+    text-decoration: none;
+    padding: 9px 18px;
+    border-radius: 999px;
+    transition: background-color var(--speed), box-shadow var(--speed);
+  }
+
+  .dl-pill:hover {
+    background: var(--lila-300);
+    box-shadow: 0 0 22px rgba(141, 123, 227, 0.45);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--text-1);
+    text-decoration: none;
+  }
+
+  .brand :global(svg) {
+    color: var(--peri);
+  }
+
+  .links {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+  }
+
+  .links a {
+    color: var(--text-2);
+    text-decoration: none;
+    padding: 10px 6px;
+    transition: color var(--speed);
+  }
+
+  .links a:hover {
+    color: var(--lila-300);
+  }
+
+  .links :global(.u-link)::after {
+    left: 6px;
+    right: 6px;
+    bottom: 7px;
+  }
+
+  @media (max-width: 768px) {
+    .nav-wrap {
+      top: 10px;
+    }
+
+    .nav {
+      gap: 12px;
+      padding-inline: 16px;
+    }
+
+    .links {
+      gap: 0;
+    }
+
+    .links a {
+      padding: 10px 8px;
+    }
+
+    .links a[href='#features'],
+    .links a[href='#privacy'] {
+      display: none;
+    }
+
+    .dl-pill {
+      padding: 8px 14px;
+    }
+  }
+</style>

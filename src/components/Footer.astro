@@ -1,0 +1,93 @@
+---
+import WisMark from '@/components/WisMark.astro'
+import { REPO_URL } from '@/lib/site'
+
+const base = import.meta.env.BASE_URL
+const docsUrl = `${base}docs/`
+const year = new Date().getFullYear()
+---
+
+<footer class="footer">
+  <div class="container wordmark-row" data-reveal>
+    <WisMark variant="solid-closed" size="0.82em" class="wm-owl" label="" />
+    <span class="wordmark" aria-hidden="true">wis</span>
+  </div>
+  <div class="container inner">
+    <span class="tagline mono">sees everything. tells nothing.</span>
+    <div class="links mono">
+      <a class="u-link" href={docsUrl}>docs</a>
+      <a class="u-link" href={REPO_URL} rel="noopener">github</a>
+      <span>&copy; {year}</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    position: relative;
+    border-top: 1px solid var(--border);
+    padding-top: 70px;
+    padding-bottom: 36px;
+    background: linear-gradient(180deg, transparent, rgba(91, 63, 188, 0.08));
+    overflow: hidden;
+  }
+
+  .wordmark-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.12em;
+    font-size: clamp(120px, 24vw, 340px);
+    line-height: 0.9;
+    margin-bottom: 30px;
+    user-select: none;
+  }
+
+  .wordmark {
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    background: linear-gradient(180deg, rgba(183, 166, 241, 0.3), rgba(183, 166, 241, 0.02));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  :global(.wm-owl) {
+    color: rgba(183, 166, 241, 0.22);
+    flex: 0 0 auto;
+  }
+
+  .inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .tagline {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+  }
+
+  .links {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+  }
+
+  .links a {
+    color: var(--text-2);
+    text-decoration: none;
+    transition: color var(--speed);
+  }
+
+  .links a:hover {
+    color: var(--lila-300);
+  }
+</style>

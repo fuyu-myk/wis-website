@@ -1,0 +1,268 @@
+---
+import WisMark from '@/components/WisMark.astro'
+
+const base = import.meta.env.BASE_URL
+const docsUrl = `${base}docs/`
+
+const stats = [
+  { k: 'bundled engine', v: 'none' },
+  { k: 'rendering', v: 'system webkit' },
+  { k: 'telemetry', v: 'none' },
+  { k: 'tor', v: 'built in' },
+]
+---
+
+<section class="hero">
+  <div class="container inner">
+    <div class="sigil" data-reveal>
+      <WisMark variant="blink" gaze size={92} label="wis owl" />
+    </div>
+    <p class="pill mono" data-reveal style="transition-delay:60ms">
+      open source &middot; webkit-native &middot; macos-first
+    </p>
+    <h1 data-reveal style="transition-delay:120ms">
+      fast and light.<br />
+      safe and
+      <em class="typed-wrap">
+        <span class="ghost" aria-hidden="true">yours.</span>
+        <span class="typed" data-word="yours."><span class="visually-hidden">yours.</span></span>
+        <span class="caret" aria-hidden="true"></span>
+      </em>
+    </h1>
+    <p class="lede" data-reveal style="transition-delay:180ms">
+      wis is an open-source browser built on the engine your mac already
+      runs: a tiny bundle that sips memory, blocks trackers by default, and
+      bends to how you browse. workspaces, split panes, your keys, your rules.
+    </p>
+    <div class="cta-row" data-reveal style="transition-delay:240ms">
+      <a class="btn btn-fill" href="#download">download for macos</a>
+      <a class="btn btn-ghost" href={docsUrl}>read the docs</a>
+    </div>
+  </div>
+  <div class="stats" data-reveal style="transition-delay:300ms">
+    <div class="container stat-row">
+      {
+        stats.map((s) => (
+          <div class="stat">
+            <span class="k mono">{s.k}</span>
+            <span class="v" data-decode>{s.v}</span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-top: 150px;
+  }
+
+  .inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-block: auto;
+    padding-block: 40px;
+  }
+
+  .sigil {
+    color: var(--peri);
+    filter: drop-shadow(0 0 26px rgba(143, 153, 251, 0.45));
+    margin-bottom: 30px;
+  }
+
+  .pill {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lila-300);
+    border: 1px solid rgba(141, 123, 227, 0.35);
+    background: rgba(141, 123, 227, 0.07);
+    border-radius: 999px;
+    padding: 8px 16px;
+    margin-bottom: 34px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  h1 {
+    font-size: clamp(52px, 8vw, 118px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    font-weight: 500;
+    margin-bottom: 30px;
+    background: linear-gradient(180deg, #ffffff 20%, var(--lila-200) 70%, var(--lila-400));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .typed-wrap {
+    position: relative;
+    display: inline-block;
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    -webkit-text-fill-color: var(--lila-400);
+    color: var(--lila-400);
+  }
+
+  .ghost {
+    visibility: hidden;
+  }
+
+  .typed {
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .caret {
+    position: absolute;
+    top: 0.14em;
+    bottom: 0.08em;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--lila-400);
+    opacity: 0;
+  }
+
+  html.js .hero .caret.on {
+    opacity: 1;
+    animation: caret-blink 1.05s steps(1) infinite;
+  }
+
+  @keyframes caret-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .lede {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--text-2);
+    max-width: 56ch;
+    margin-bottom: 40px;
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .stats {
+    border-block: 1px solid var(--border);
+    background: rgba(10, 10, 16, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 22px 18px;
+    text-align: center;
+  }
+
+  .stat + .stat {
+    border-left: 1px solid var(--border);
+  }
+
+  .k {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .v {
+    font-size: 16.5px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--lila-300);
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding-top: 120px;
+    }
+
+    .stat-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .stat:nth-child(3) {
+      border-left: 0;
+    }
+
+    .stat:nth-child(n + 3) {
+      border-top: 1px solid var(--border);
+    }
+  }
+</style>
+
+<script>
+  // Types the serif word once, then lets the caret breathe and fade.
+  // Without JS (or with reduced motion) the full word renders statically.
+  const typed = document.querySelector<HTMLElement>('.typed')
+  const caret = document.querySelector<HTMLElement>('.hero .caret')
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (typed && caret) {
+    const word = typed.dataset.word ?? ''
+    const live = document.createElement('span')
+    live.setAttribute('aria-hidden', 'true')
+    typed.appendChild(live)
+
+    const placeCaret = () => {
+      caret.style.left = `${live.offsetLeft + live.offsetWidth + 4}px`
+    }
+
+    if (reduced) {
+      live.textContent = word
+      placeCaret()
+    } else {
+      caret.classList.add('on')
+      placeCaret()
+      let i = 0
+      const step = () => {
+        live.textContent = word.slice(0, i)
+        placeCaret()
+        i += 1
+        if (i <= word.length) {
+          setTimeout(step, 80 + Math.random() * 90)
+        } else {
+          setTimeout(() => caret.classList.remove('on'), 2600)
+        }
+      }
+      setTimeout(step, 750)
+    }
+  }
+</script>

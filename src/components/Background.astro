@@ -1,0 +1,415 @@
+---
+/**
+ * Ambient background: a fixed constellation canvas (drifting points of
+ * light that briefly connect, "thoughts" forming and dissolving) plus
+ * an aurora anchored behind the hero. The aurora is a tiny raw-WebGL
+ * fbm shader (src/lib/aurora) that brightens toward the pointer and
+ * erases its wake — browsing leaves no trace; the CSS blobs remain as
+ * the no-WebGL fallback. Pure canvas + CSS + one shader, no deps.
+ * Under prefers-reduced-motion everything renders a single static frame.
+ */
+---
+
+<div class="bg" aria-hidden="true">
+  <div class="aurora">
+    <canvas class="aurora-gl"></canvas>
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <canvas id="constellation"></canvas>
+</div>
+
+<style>
+  .bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: clip;
+    pointer-events: none;
+  }
+
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .aurora {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 130vh;
+  }
+
+  .aurora-gl {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+  }
+
+  .aurora.gl-on .aurora-gl {
+    opacity: 1;
+  }
+
+  .aurora.gl-on .blob {
+    opacity: 0;
+    animation-play-state: paused;
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    will-change: transform;
+    mix-blend-mode: screen;
+    transition: opacity 1.4s ease;
+  }
+
+  .b1 {
+    width: 56vw;
+    height: 44vh;
+    left: -8vw;
+    top: -12vh;
+    background: radial-gradient(closest-side, rgba(114, 87, 214, 0.34), transparent);
+    animation: drift-a 52s ease-in-out infinite alternate;
+  }
+
+  .b2 {
+    width: 50vw;
+    height: 46vh;
+    right: -10vw;
+    top: -6vh;
+    background: radial-gradient(closest-side, rgba(143, 153, 251, 0.26), transparent);
+    animation: drift-b 64s ease-in-out infinite alternate;
+  }
+
+  .b3 {
+    width: 44vw;
+    height: 38vh;
+    left: 26vw;
+    top: 22vh;
+    background: radial-gradient(closest-side, rgba(91, 63, 188, 0.22), transparent);
+    animation: drift-c 76s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift-a {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    to {
+      transform: translate3d(9vw, 7vh, 0) scale(1.18);
+    }
+  }
+
+  @keyframes drift-b {
+    from {
+      transform: translate3d(0, 0, 0) scale(1.12);
+    }
+
+    to {
+      transform: translate3d(-7vw, 9vh, 0) scale(0.94);
+    }
+  }
+
+  @keyframes drift-c {
+    from {
+      transform: translate3d(0, 0, 0) scale(0.96);
+    }
+
+    to {
+      transform: translate3d(6vw, -6vh, 0) scale(1.2);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .blob {
+      filter: blur(60px);
+    }
+
+    .b1,
+    .b2,
+    .b3 {
+      width: 90vw;
+      height: 36vh;
+    }
+  }
+</style>
+
+<script>
+  import { initAurora } from '@/lib/aurora'
+
+  // Shader aurora with graceful degradation: the CSS blobs stay visible
+  // unless WebGL setup fully succeeds, and come back if the context dies.
+  const auroraWrap = document.querySelector<HTMLElement>('.aurora')
+  const auroraCanvas = document.querySelector<HTMLCanvasElement>('.aurora-gl')
+  if (auroraWrap && auroraCanvas) {
+    try {
+      const handle = initAurora(auroraCanvas, {
+        reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        onFail: () => auroraWrap.classList.remove('gl-on'),
+      })
+      if (handle) auroraWrap.classList.add('gl-on')
+    } catch (err) {
+      console.warn('aurora: falling back to CSS blobs', err)
+    }
+  }
+
+  const canvas = document.getElementById('constellation') as HTMLCanvasElement | null
+  const ctx = canvas?.getContext('2d')
+
+  if (canvas && ctx) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+
+    interface Star {
+      x: number
+      y: number
+      vx: number
+      vy: number
+      r: number
+      phase: number
+      hue: 'lila' | 'peri'
+    }
+
+    let stars: Star[] = []
+    let deepStars: Star[] = []
+    let width = 0
+    let height = 0
+
+    const makeStars = (count: number, speed: number, minR: number, maxR: number): Star[] =>
+      Array.from({ length: count }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * speed,
+        vy: (Math.random() - 0.5) * speed * 0.7,
+        r: minR + Math.random() * (maxR - minR),
+        phase: Math.random() * Math.PI * 2,
+        hue: Math.random() < 0.55 ? 'lila' : 'peri',
+      }))
+
+    const resize = () => {
+      width = window.innerWidth
+      height = window.innerHeight
+      canvas.width = Math.floor(width * dpr)
+      canvas.height = Math.floor(height * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      stars = makeStars(Math.min(90, Math.floor((width * height) / 16000)), 14, 0.7, 2.1)
+      // A farther, dimmer field drifting slower: parallax depth, near-static.
+      deepStars = makeStars(Math.min(110, Math.floor((width * height) / 13000)), 4.5, 0.35, 0.85)
+    }
+
+    const LINK_DIST = 135
+    const CURSOR_R = 210
+    const colors = { lila: '196, 181, 253', peri: '143, 153, 251' }
+
+    // The pointer is the reader's gaze: stars brighten and connect more
+    // willingly near it, thoughts gathering where you look.
+    let mx = -9999
+    let my = -9999
+    const gaze = (x: number, y: number) => {
+      const d = Math.hypot(x - mx, y - my)
+      return d < CURSOR_R ? 1 - d / CURSOR_R : 0
+    }
+
+    // Rare events: a meteor (a passing thought) and an ignition (a small
+    // cluster briefly crystallizing into a real constellation).
+    interface Meteor {
+      x: number
+      y: number
+      vx: number
+      vy: number
+      born: number
+      dur: number
+    }
+
+    let meteor: Meteor | null = null
+    let nextMeteor = 9000 + Math.random() * 14000
+    let ignited: Star[] = []
+    let ignitionStart = 0
+    const IGNITION_DUR = 2800
+    let nextIgnition = 5000 + Math.random() * 9000
+
+    const spawnMeteor = (t: number) => {
+      const angle = (28 + Math.random() * 22) * (Math.PI / 180)
+      const dir = Math.random() < 0.5 ? 1 : -1
+      const speed = 950 + Math.random() * 450
+      meteor = {
+        x: width * (0.15 + Math.random() * 0.7),
+        y: height * (0.05 + Math.random() * 0.35),
+        vx: Math.cos(angle) * speed * dir,
+        vy: Math.sin(angle) * speed,
+        born: t,
+        dur: 750 + Math.random() * 350,
+      }
+    }
+
+    const spawnIgnition = (t: number) => {
+      const seed = stars[Math.floor(Math.random() * stars.length)]
+      if (!seed) return
+      const near = stars
+        .filter((s) => s !== seed && Math.hypot(s.x - seed.x, s.y - seed.y) < 180)
+        .slice(0, 4)
+      if (near.length < 2) return
+      ignited = [seed, ...near]
+      ignitionStart = t
+    }
+
+    const ignitionPulse = (t: number) => {
+      if (ignited.length === 0) return 0
+      const p = (t - ignitionStart) / IGNITION_DUR
+      if (p >= 1) {
+        ignited = []
+        return 0
+      }
+      return Math.sin(Math.PI * p)
+    }
+
+    const draw = (t: number, animate: boolean) => {
+      ctx.clearRect(0, 0, width, height)
+      for (const s of deepStars) {
+        const tw = animate ? 0.6 + 0.4 * Math.sin(t * 0.0006 + s.phase) : 0.8
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${colors[s.hue]}, ${0.1 + 0.16 * tw})`
+        ctx.fill()
+      }
+      const ig = animate ? ignitionPulse(t) : 0
+      for (const s of stars) {
+        const tw = animate ? 0.55 + 0.45 * Math.sin(t * 0.0011 + s.phase) : 0.8
+        const g = animate ? gaze(s.x, s.y) : 0
+        const boost = ig > 0 && ignited.includes(s) ? ig : 0
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r + g * 0.8 + boost * 0.9, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${colors[s.hue]}, ${Math.min(1, 0.28 + 0.5 * tw + 0.5 * g + 0.45 * boost)})`
+        ctx.fill()
+      }
+      if (!animate) return
+      for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+          const a = stars[i]
+          const b = stars[j]
+          const dx = a.x - b.x
+          const dy = a.y - b.y
+          const d = Math.hypot(dx, dy)
+          const bonded = ig > 0 && ignited.includes(a) && ignited.includes(b)
+          if (d >= LINK_DIST && !bonded) continue
+          const pulse = 0.5 + 0.5 * Math.sin(t * 0.00045 + (a.phase + b.phase) * 2.1)
+          const g = (gaze(a.x, a.y) + gaze(b.x, b.y)) / 2
+          const near = Math.max(0, 1 - d / LINK_DIST)
+          let alpha = near * 0.17 * pulse * (1 + 2.4 * g) + near * 0.1 * g
+          if (bonded) alpha += 0.4 * ig
+          if (alpha < 0.012) continue
+          ctx.beginPath()
+          ctx.moveTo(a.x, a.y)
+          ctx.lineTo(b.x, b.y)
+          ctx.strokeStyle = `rgba(183, 166, 241, ${Math.min(0.6, alpha)})`
+          ctx.lineWidth = bonded ? 1.2 : 1
+          ctx.stroke()
+        }
+      }
+      if (meteor) {
+        const p = (t - meteor.born) / meteor.dur
+        if (p >= 1) {
+          meteor = null
+        } else {
+          const fade = Math.sin(Math.PI * p)
+          const mxp = meteor.x + (meteor.vx * (t - meteor.born)) / 1000
+          const myp = meteor.y + (meteor.vy * (t - meteor.born)) / 1000
+          const trail = 95
+          const tx = mxp - (meteor.vx / Math.hypot(meteor.vx, meteor.vy)) * trail
+          const ty = myp - (meteor.vy / Math.hypot(meteor.vx, meteor.vy)) * trail
+          const grad = ctx.createLinearGradient(mxp, myp, tx, ty)
+          grad.addColorStop(0, `rgba(221, 214, 254, ${0.8 * fade})`)
+          grad.addColorStop(1, 'rgba(221, 214, 254, 0)')
+          ctx.beginPath()
+          ctx.moveTo(mxp, myp)
+          ctx.lineTo(tx, ty)
+          ctx.strokeStyle = grad
+          ctx.lineWidth = 1.6
+          ctx.stroke()
+        }
+      } else if (t > nextMeteor) {
+        spawnMeteor(t)
+        nextMeteor = t + 20000 + Math.random() * 20000
+      }
+      if (ignited.length === 0 && t > nextIgnition) {
+        spawnIgnition(t)
+        nextIgnition = t + 14000 + Math.random() * 11000
+      }
+    }
+
+    let last = performance.now()
+    const tick = (t: number) => {
+      const dt = Math.min((t - last) / 1000, 0.05)
+      last = t
+      if (!document.hidden) {
+        const advance = (field: Star[]) => {
+          for (const s of field) {
+            s.x += s.vx * dt
+            s.y += s.vy * dt
+            if (s.x < -8) s.x = width + 8
+            if (s.x > width + 8) s.x = -8
+            if (s.y < -8) s.y = height + 8
+            if (s.y > height + 8) s.y = -8
+          }
+        }
+        advance(stars)
+        advance(deepStars)
+        draw(t, true)
+      }
+      requestAnimationFrame(tick)
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+
+    if (reduced) {
+      draw(0, false)
+    } else {
+      if (window.matchMedia('(pointer: fine)').matches) {
+        window.addEventListener(
+          'pointermove',
+          (e) => {
+            mx = e.clientX
+            my = e.clientY
+          },
+          { passive: true },
+        )
+        document.documentElement.addEventListener('pointerleave', () => {
+          mx = -9999
+          my = -9999
+        })
+      }
+
+      // Aurora drifts at a fraction of scroll speed, lingering like an
+      // afterglow before the page settles into the dark.
+      const aurora = document.querySelector<HTMLElement>('.aurora')
+      if (aurora) {
+        let ticking = false
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (ticking) return
+            ticking = true
+            requestAnimationFrame(() => {
+              const shift = Math.min(window.scrollY * 0.18, window.innerHeight * 0.55)
+              aurora.style.transform = `translate3d(0, ${shift}px, 0)`
+              ticking = false
+            })
+          },
+          { passive: true },
+        )
+      }
+
+      requestAnimationFrame(tick)
+    }
+  }
+</script>

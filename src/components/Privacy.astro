@@ -1,0 +1,171 @@
+---
+const HEAD = 'M32 72 L58 34 L82 72 L100 58 L118 72 L142 34 L168 72 C168 128 144 168 100 168 C56 168 32 128 32 72 Z'
+const BEAK = 'M100 122 L106 132 L100 138 L94 132 Z'
+
+const items = [
+  'trackers blocked at the engine, easylist and easyprivacy compiled to native content rules',
+  'dns queries resolved over https',
+  'https first, plain http upgraded before the request leaves',
+  'session cookies encrypted at rest, sealed with chacha20-poly1305',
+  'private windows are ephemeral workspaces: nothing ever touches disk',
+  'risky links intercepted by a full-page warning before they load',
+]
+---
+
+<section class="privacy-band section" id="privacy">
+  <div class="container inner">
+    <div class="copy">
+      <p class="eyebrow" data-reveal>03 &middot; privacy</p>
+      <h2 class="section-title" data-reveal>eyes closed means<br />eyes <em>closed</em>.</h2>
+      <p class="section-lede" data-reveal>
+        privacy in wis is a decision engine, not a checkbox. every request is
+        judged per workspace: blocked, upgraded, or routed through your proxy
+        or tor, before it leaves the machine.
+      </p>
+      <ul class="list">
+        {
+          items.map((item, i) => (
+            <li class="mono" data-reveal style={`transition-delay:${i * 50}ms`}>
+              <span class="tick" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m5 12.5 4.5 4.5L19 7.5" />
+                </svg>
+              </span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="mark" aria-hidden="true" data-reveal>
+      <svg
+        class="privacy-owl"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 200 200"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="9"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d={HEAD}></path>
+        <g class="pupils" fill="currentColor" stroke="none">
+          <circle cx="76" cy="108" r="15"></circle>
+          <circle cx="124" cy="108" r="15"></circle>
+        </g>
+        <g class="lids" opacity="0">
+          <path d="M62 108 Q76 96 90 108"></path>
+          <path d="M110 108 Q124 96 138 108"></path>
+        </g>
+        <path d={BEAK} fill="currentColor" stroke="none"></path>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<style>
+  .privacy-band {
+    border-block: 1px solid var(--border);
+    background: rgba(6, 6, 9, 0.5);
+  }
+
+  .privacy-band::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(46% 60% at 72% 50%, rgba(91, 63, 188, 0.16), transparent 70%);
+  }
+
+  .inner {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 64px;
+    align-items: center;
+  }
+
+  .list {
+    list-style: none;
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .list li {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  .tick {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    color: var(--lila-400);
+    transform: translateY(2px);
+  }
+
+  .mark {
+    color: var(--lila-500);
+    opacity: 0.95;
+    max-width: 380px;
+    justify-self: center;
+    filter: drop-shadow(0 0 48px rgba(141, 123, 227, 0.3));
+  }
+
+  .privacy-owl {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Eyes open on approach, closed once you arrive: the section header,
+     demonstrated. Reopens when scrolled away. */
+  .privacy-owl circle {
+    transition: r 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .privacy-owl .lids {
+    transition: opacity 0.3s ease 0.22s;
+  }
+
+  .privacy-band.eyes-closed .privacy-owl circle {
+    r: 0px;
+  }
+
+  .privacy-band.eyes-closed .privacy-owl .lids {
+    opacity: 1;
+  }
+
+  @media (max-width: 900px) {
+    .inner {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .mark {
+      max-width: 220px;
+      justify-self: start;
+      order: -1;
+    }
+  }
+</style>
+
+<script>
+  const band = document.querySelector('.privacy-band')
+  if (band && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          band.classList.toggle('eyes-closed', entry.isIntersecting)
+        }
+      },
+      { threshold: 0.45 },
+    )
+    observer.observe(band)
+  }
+</script>

@@ -1,0 +1,330 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+
+/* Tokens: near-black canvas, lila scale from the app's tokens.css used
+   generously, periwinkle from the brand guidelines. Dark-only site. */
+:root {
+  --font-display: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-editorial: 'Instrument Serif', serif;
+
+  --lila-100: #ede9fe;
+  --lila-200: #ddd6fe;
+  --lila-300: #c4b5fd;
+  --lila-400: #b7a6f1;
+  --lila-500: #8d7be3;
+  --lila-600: #7257d6;
+  --lila-700: #5b3fbc;
+  --lila-800: #48319a;
+  --lila-900: #382575;
+  --peri: #8F99FB;
+
+  --bg-0: #060609;
+  --bg-1: #0a0a10;
+  --bg-2: #0e0e16;
+  --ink: #15172a;
+
+  --text-1: #eeedf0;
+  --text-2: #a7a6b6;
+  --text-3: #8b8a99;
+
+  --border: rgba(238, 237, 240, 0.07);
+  --border-strong: rgba(238, 237, 240, 0.14);
+  --border-lila: rgba(141, 123, 227, 0.45);
+
+  --glass: rgba(238, 237, 240, 0.03);
+  --glass-2: rgba(141, 123, 227, 0.05);
+
+  --radius-card: 20px;
+  --container: 1140px;
+  --speed: 220ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
+
+body {
+  font-family: var(--font-display);
+  font-feature-settings: 'ss01';
+  -webkit-font-smoothing: antialiased;
+  background: var(--bg-1);
+  color: var(--text-1);
+  font-size: 17px;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(141, 123, 227, 0.35);
+}
+
+a {
+  color: var(--peri);
+}
+
+:focus-visible {
+  outline: 2px solid var(--peri);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Layout */
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-inline: 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.section {
+  padding-block: 150px;
+  position: relative;
+}
+
+/* Shared text styles */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lila-400);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--lila-500), transparent);
+}
+
+.section-title {
+  font-size: clamp(40px, 5.4vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  margin-bottom: 20px;
+  background: linear-gradient(180deg, var(--text-1) 30%, var(--lila-300));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.section-title em {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  -webkit-text-fill-color: var(--lila-400);
+  color: var(--lila-400);
+}
+
+.section-lede {
+  font-size: 18px;
+  color: var(--text-2);
+  max-width: 58ch;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 0 28px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--speed), border-color var(--speed), color var(--speed), box-shadow var(--speed),
+    transform 180ms ease-out;
+  cursor: pointer;
+}
+
+/* Underline that draws itself in; used by nav and footer links */
+.u-link {
+  position: relative;
+  text-decoration: none;
+}
+
+.u-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--lila-400), var(--peri));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.u-link:hover::after,
+.u-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.btn-fill {
+  background: var(--lila-400);
+  color: var(--ink);
+  box-shadow: 0 0 28px rgba(141, 123, 227, 0.35);
+}
+
+.btn-fill:hover {
+  background: var(--lila-300);
+  box-shadow: 0 0 44px rgba(141, 123, 227, 0.55);
+}
+
+.btn-ghost {
+  border: 1px solid var(--border-strong);
+  color: var(--text-1);
+  background: rgba(10, 10, 16, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-ghost:hover {
+  border-color: var(--border-lila);
+  color: var(--lila-300);
+}
+
+/* Chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-2);
+}
+
+.chip-lila {
+  border-color: var(--border-lila);
+  color: var(--lila-300);
+}
+
+/* Glass cards (shared by sections; spotlight uses --mx/--my set by JS) */
+.card-g {
+  position: relative;
+  background: linear-gradient(180deg, var(--glass-2), var(--glass));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  transition: border-color var(--speed), transform var(--speed);
+}
+
+.card-g::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(143, 153, 251, 0.1), transparent 65%);
+}
+
+.card-g:hover {
+  border-color: var(--border-lila);
+}
+
+.card-g:hover::before {
+  opacity: 1;
+}
+
+.card-g > * {
+  position: relative;
+}
+
+/* Grain overlay for the whole page */
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+/* Scroll reveals: only when JS is present, never under reduced motion */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(7px);
+  transition: opacity 0.7s ease, transform 0.7s ease, filter 0.7s ease;
+}
+
+html.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding-block: 88px;
+  }
+
+  .container {
+    padding-inline: 20px;
+  }
+}

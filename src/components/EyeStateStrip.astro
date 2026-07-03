@@ -1,0 +1,511 @@
+---
+/**
+ * Pinned scrollytelling for the mark. The stage (text panel + owl) sticks
+ * for the whole section while invisible trigger zones behind it provide
+ * scroll distance: each step holds centered mid-viewport for ~108vh of
+ * scroll, so the words appear in place rather than scrolling past.
+ * Intro phase: centered title with the owl center stage; story phase:
+ * owl glides to the right rail and the steps cascade in word by word.
+ * Native scroll only. Without JS the stage flattens to normal flow,
+ * everything visible, owl resting open.
+ */
+const HEAD = 'M32 72 L58 34 L82 72 L100 58 L118 72 L142 34 L168 72 C168 128 144 168 100 168 C56 168 32 128 32 72 Z'
+const BEAK = 'M100 122 L106 132 L100 138 L94 132 Z'
+
+const states = [
+  {
+    id: 'open',
+    tag: 'at rest · open',
+    title: 'eyes open',
+    copy: 'present, attentive, ready. the default mark, everywhere the brand lives.',
+  },
+  {
+    id: 'loading',
+    tag: 'loading · blink',
+    title: 'eyes blinking',
+    copy: 'the favicon blinks instead of spinning, and stops the instant the page settles.',
+  },
+  {
+    id: 'closed',
+    tag: 'private · closed',
+    title: 'eyes closed',
+    copy: 'in private windows and reader mode the eyes close. not watching, and showing it.',
+  },
+] as const
+---
+
+<section class="mark-story" data-phase="intro" data-state="open">
+  <div class="track">
+    <div class="stage">
+      <div class="container stage-grid">
+        <div class="intro-block">
+          <p class="eyebrow" data-reveal>01 &middot; the mark</p>
+          <h2 class="section-title" data-reveal>the icon tells a <em>story</em>.</h2>
+          <p class="section-lede" data-reveal>
+            one owl, three eye states. wis signals what it is doing with the
+            brand itself: no extra spinners, no extra icons, no performative
+            privacy badges. keep scrolling, the mark follows along.
+          </p>
+        </div>
+        <div class="panel">
+          {
+            states.map((s) => (
+              <div class="step" data-step={s.id}>
+                <p class="tag mono">{s.tag}</p>
+                <h3>
+                  {s.title.split(' ').map((w, wi) => (
+                    <span class="w" style={`--wi:${wi}`}>
+                      {w}
+                    </span>
+                  ))}
+                </h3>
+                <p class="copy">
+                  {s.copy.split(' ').map((w, wi) => (
+                    <span class="w" style={`--wi:${wi}`}>
+                      {w}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+        <div class="owl-wrap">
+          <div class="owl-pin">
+            <svg
+              class="story-owl"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 200 200"
+              fill="currentColor"
+              role="img"
+              aria-label="wis owl cycling through its eye states"
+            >
+              <defs>
+                <mask id="story-owl-mask" maskUnits="userSpaceOnUse">
+                  <rect width="200" height="200" fill="#fff"></rect>
+                  <circle class="so-pupil" cx="76" cy="108" r="15" fill="#000"></circle>
+                  <circle class="so-pupil" cx="124" cy="108" r="15" fill="#000"></circle>
+                  <g class="so-lids" opacity="0">
+                    <path
+                      d="M62 108 Q76 100 90 108"
+                      stroke="#000"
+                      stroke-width="6"
+                      fill="none"
+                      stroke-linecap="round"></path>
+                    <path
+                      d="M110 108 Q124 100 138 108"
+                      stroke="#000"
+                      stroke-width="6"
+                      fill="none"
+                      stroke-linecap="round"></path>
+                  </g>
+                  <path d={BEAK} fill="#000"></path>
+                </mask>
+              </defs>
+              <path d={HEAD} mask="url(#story-owl-mask)"></path>
+            </svg>
+            <div class="progress mono" aria-hidden="true">
+              {states.map((s, i) => <span class="p-dot" data-step={s.id}>{String(i + 1).padStart(2, '0')}</span>)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="triggers" aria-hidden="true">
+      <div class="trigger" data-step="intro"></div>
+      {states.map((s) => <div class="trigger" data-step={s.id} />)}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Base styles are the no-JS fallback: everything in normal flow. */
+  .mark-story {
+    position: relative;
+  }
+
+  .track {
+    position: relative;
+  }
+
+  .stage {
+    padding-block: 110px;
+  }
+
+  .intro-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 70px;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .intro-block .eyebrow {
+    justify-content: center;
+  }
+
+  .intro-block :global(.section-lede) {
+    max-width: 52ch;
+  }
+
+  .step {
+    padding-block: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 44ch;
+  }
+
+  .owl-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 48px;
+  }
+
+  .owl-pin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 34px;
+  }
+
+  /* Pinned stage when JS is available. */
+  html.js .stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    padding-block: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  html.js .stage-grid {
+    display: grid;
+    grid-template-columns: 1fr 0.9fr;
+    column-gap: 64px;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  html.js .intro-block {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    justify-content: center;
+    padding-bottom: 40vh;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  html.js .mark-story[data-phase='story'] .intro-block {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+
+  html.js .panel {
+    grid-column: 1;
+    position: relative;
+    height: 100%;
+  }
+
+  html.js .step {
+    position: absolute;
+    inset: 0;
+    justify-content: center;
+    padding-block: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  html.js .step.is-active {
+    opacity: 1;
+  }
+
+  html.js .owl-wrap {
+    grid-column: 2;
+    margin: 0;
+    align-self: center;
+  }
+
+  html.js .owl-pin {
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Intro phase: the owl takes center stage below the centered title.
+     The lateral shift from rail center to container center is measured
+     in JS so it holds at any width. */
+  html.js .mark-story[data-phase='intro'] .owl-pin {
+    transform: translate(var(--owl-shift, 0px), 15vh) scale(1.16);
+  }
+
+  /* Scroll distance per step: the pause where nothing moves but the story. */
+  html.js .trigger {
+    height: 108vh;
+  }
+
+  html.js .trigger[data-step='intro'] {
+    height: 76vh;
+  }
+
+  /* Cascade: tag first, then each title word, then the body word by word. */
+  html.js .step .tag,
+  html.js .step h3 .w,
+  html.js .step .copy .w {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+    transition: opacity 0.45s ease, transform 0.45s ease, filter 0.45s ease;
+    transition-delay: 0ms;
+  }
+
+  html.js .step .copy .w {
+    transform: translateY(8px);
+  }
+
+  html.js .step.is-active .tag,
+  html.js .step.is-active h3 .w,
+  html.js .step.is-active .copy .w {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  html.js .step.is-active .tag {
+    transition-delay: 40ms;
+  }
+
+  html.js .step.is-active h3 .w {
+    transition-delay: calc(150ms + var(--wi) * 95ms);
+  }
+
+  html.js .step.is-active .copy .w {
+    transition-delay: calc(380ms + var(--wi) * 30ms);
+  }
+
+  .tag {
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lila-400);
+  }
+
+  h3 {
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.28em;
+  }
+
+  h3 .w {
+    display: inline-block;
+  }
+
+  .copy {
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  .copy .w {
+    display: inline-block;
+    margin-right: 0.32em;
+  }
+
+  .progress {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    transition: opacity 0.4s ease;
+  }
+
+  .mark-story[data-phase='intro'] .progress {
+    opacity: 0;
+  }
+
+  .story-owl {
+    width: min(300px, 100%);
+    height: auto;
+    color: var(--lila-300);
+    filter: drop-shadow(0 0 38px rgba(141, 123, 227, 0.35));
+  }
+
+  /* Eye-state machine, driven by data-state on the section. */
+  .so-pupil {
+    transition: r 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .so-lids {
+    transition: opacity 0.26s ease 0.14s;
+  }
+
+  .mark-story[data-state='closed'] .so-pupil {
+    r: 0px;
+  }
+
+  .mark-story[data-state='closed'] .so-lids {
+    opacity: 1;
+  }
+
+  .mark-story[data-state='loading'] .so-pupil {
+    animation: so-blink 1.4s infinite;
+  }
+
+  .mark-story[data-state='loading'] .so-lids {
+    animation: so-lids 1.4s infinite;
+  }
+
+  /* A small reward for attention: the open owl widens its pupils on hover. */
+  .mark-story[data-state='open'] .story-owl:hover .so-pupil {
+    r: 17.5px;
+  }
+
+  @keyframes so-blink {
+    0%,
+    48% {
+      r: 15px;
+    }
+
+    50%,
+    98% {
+      r: 0px;
+    }
+
+    100% {
+      r: 15px;
+    }
+  }
+
+  @keyframes so-lids {
+    0%,
+    48% {
+      opacity: 0;
+    }
+
+    50%,
+    98% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .p-dot {
+    color: var(--text-3);
+    position: relative;
+    transition: color var(--speed);
+  }
+
+  .p-dot.is-active {
+    color: var(--lila-300);
+  }
+
+  .p-dot.is-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -7px;
+    height: 1px;
+    background: var(--lila-400);
+  }
+
+  @media (max-width: 900px) {
+    html.js .stage-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0, 42svh) minmax(0, 1fr);
+      column-gap: 0;
+    }
+
+    html.js .owl-wrap {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: end;
+      padding-bottom: 12px;
+    }
+
+    html.js .panel {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    html.js .step {
+      justify-content: flex-start;
+      padding-top: 6svh;
+    }
+
+    /* Mobile intro: owl holds the upper area, centered text sits below it. */
+    html.js .intro-block {
+      justify-content: flex-end;
+      padding-bottom: 10svh;
+      padding-inline: 20px;
+    }
+
+    html.js .mark-story[data-phase='intro'] .owl-pin {
+      transform: scale(1.08);
+    }
+
+    html.js .story-owl {
+      width: 140px;
+    }
+
+    html.js .owl-pin {
+      gap: 18px;
+    }
+  }
+</style>
+
+<script>
+  const section = document.querySelector<HTMLElement>('.mark-story')
+  const grid = section?.querySelector<HTMLElement>('.stage-grid')
+  const owlWrap = section?.querySelector<HTMLElement>('.owl-wrap')
+  const steps = section?.querySelectorAll<HTMLElement>('.step')
+  const triggers = section?.querySelectorAll<HTMLElement>('.trigger')
+
+  if (section && grid && owlWrap && steps && triggers && steps.length > 0 && 'IntersectionObserver' in window) {
+    const dots = section.querySelectorAll<HTMLElement>('.p-dot')
+
+    const measure = () => {
+      const gridRect = grid.getBoundingClientRect()
+      const railRect = owlWrap.getBoundingClientRect()
+      const shift = gridRect.left + gridRect.width / 2 - (railRect.left + railRect.width / 2)
+      section.style.setProperty('--owl-shift', `${shift}px`)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+
+    const activate = (id: string) => {
+      if (id === 'intro') {
+        section.dataset.phase = 'intro'
+        section.dataset.state = 'open'
+        steps.forEach((s) => s.classList.remove('is-active'))
+        dots.forEach((d) => d.classList.remove('is-active'))
+        return
+      }
+      section.dataset.phase = 'story'
+      section.dataset.state = id
+      steps.forEach((s) => s.classList.toggle('is-active', s.dataset.step === id))
+      dots.forEach((d) => d.classList.toggle('is-active', d.dataset.step === id))
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = (entry.target as HTMLElement).dataset.step
+            if (id) activate(id)
+          }
+        }
+      },
+      { rootMargin: '-42% 0px -42% 0px' },
+    )
+    triggers.forEach((t) => observer.observe(t))
+  }
+</script>

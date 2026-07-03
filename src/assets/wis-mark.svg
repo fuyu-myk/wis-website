@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="#8F99FB">
+  <defs>
+    <mask id="wis-logo-mask">
+      <rect width="200" height="200" fill="#fff"/>
+      <circle cx="76" cy="108" r="15" fill="#000"/>
+      <circle cx="124" cy="108" r="15" fill="#000"/>
+      <path d="M100 122 L106 132 L100 138 L94 132 Z" fill="#000"/>
+    </mask>
+  </defs>
+  <path d="M32 72 L58 34 L82 72 L100 58 L118 72 L142 34 L168 72 C168 128 144 168 100 168 C56 168 32 128 32 72 Z" mask="url(#wis-logo-mask)"/>
+</svg>

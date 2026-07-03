@@ -1,0 +1,211 @@
+---
+/**
+ * The wis owl mark, ported from the app's WisMark.tsx.
+ * Canvas 200x200, line weight 9, pupils r=15, currentColor throughout.
+ * Animated variants (blink/loading) use SMIL; a static mark is swapped in
+ * under prefers-reduced-motion since SMIL ignores CSS animation gating.
+ */
+export type WisMarkVariant = 'solid-open' | 'solid-closed' | 'line-open' | 'line-closed' | 'blink' | 'loading'
+
+interface Props {
+  variant?: WisMarkVariant
+  size?: number | string
+  class?: string
+  label?: string
+  /** Pupils track the pointer (fine pointers only, ignores reduced motion). */
+  gaze?: boolean
+}
+
+const { variant = 'solid-open', size = 32, class: className, label = 'wis', gaze = false } = Astro.props
+
+const HEAD = 'M32 72 L58 34 L82 72 L100 58 L118 72 L142 34 L168 72 C168 128 144 168 100 168 C56 168 32 128 32 72 Z'
+const BEAK = 'M100 122 L106 132 L100 138 L94 132 Z'
+const LEFT_LID = 'M62 108 Q76 100 90 108'
+const RIGHT_LID = 'M110 108 Q124 100 138 108'
+
+const uid = Math.random().toString(36).slice(2, 8)
+const maskId = `wm-${variant}-${uid}`
+const isLine = variant === 'line-open' || variant === 'line-closed'
+const isAnimated = variant === 'blink' || variant === 'loading'
+const closed = variant === 'solid-closed'
+
+// Loading is a 50% duty-cycle blink per the brand spec: hold open, snap
+// shut, hold closed, snap open. Linear interpolation would read as a
+// slow squint instead of a blink.
+const dur = variant === 'blink' ? '3.4s' : '1.4s'
+const pupilValues = variant === 'blink' ? '15;15;0;15;15' : '15;15;0;0;15'
+const pupilKeyTimes = variant === 'blink' ? '0;0.86;0.9;0.94;1' : '0;0.48;0.5;0.98;1'
+const lidValues = variant === 'blink' ? '0;0;1;0;0' : '0;0;1;1;0'
+---
+
+{
+  isLine ? (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 200 200"
+      width={size}
+      height={size}
+      role="img"
+      aria-label={label}
+      class={className}
+      fill="none"
+      stroke="currentColor"
+      stroke-width="9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d={HEAD} />
+      {variant === 'line-open' ? (
+        <>
+          <circle cx="76" cy="108" r="15" fill="currentColor" stroke="none" />
+          <circle cx="124" cy="108" r="15" fill="currentColor" stroke="none" />
+        </>
+      ) : (
+        <>
+          <path d={LEFT_LID} />
+          <path d={RIGHT_LID} />
+        </>
+      )}
+      <path d={BEAK} fill="currentColor" stroke="none" />
+    </svg>
+  ) : (
+    <span
+      class:list={['wis-mark-slot', className]}
+      style={`width:${typeof size === 'number' ? `${size}px` : size};`}
+      data-wis-gaze={gaze ? '' : undefined}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 200 200"
+        role="img"
+        aria-label={label}
+        class:list={[isAnimated && 'wm-animated']}
+        fill="currentColor"
+      >
+        <defs>
+          <mask id={maskId} maskUnits="userSpaceOnUse">
+            <rect width="200" height="200" fill="#fff" />
+            <circle cx="76" cy="108" r={closed ? 0 : 15} fill="#000" data-pupil="l">
+              {isAnimated && (
+                <animate attributeName="r" values={pupilValues} keyTimes={pupilKeyTimes} dur={dur} repeatCount="indefinite" />
+              )}
+            </circle>
+            <circle cx="124" cy="108" r={closed ? 0 : 15} fill="#000" data-pupil="r">
+              {isAnimated && (
+                <animate attributeName="r" values={pupilValues} keyTimes={pupilKeyTimes} dur={dur} repeatCount="indefinite" />
+              )}
+            </circle>
+            <g opacity={closed ? 1 : 0}>
+              <path d={LEFT_LID} stroke="#000" stroke-width="6" fill="none" stroke-linecap="round">
+                {isAnimated && (
+                  <animate attributeName="opacity" values={lidValues} keyTimes={pupilKeyTimes} dur={dur} repeatCount="indefinite" />
+                )}
+              </path>
+              <path d={RIGHT_LID} stroke="#000" stroke-width="6" fill="none" stroke-linecap="round">
+                {isAnimated && (
+                  <animate attributeName="opacity" values={lidValues} keyTimes={pupilKeyTimes} dur={dur} repeatCount="indefinite" />
+                )}
+              </path>
+            </g>
+            <path d={BEAK} fill="#000" />
+          </mask>
+        </defs>
+        <path d={HEAD} mask={`url(#${maskId})`} />
+      </svg>
+      {isAnimated && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 200 200"
+          aria-hidden="true"
+          class="wm-static-fallback"
+          fill="currentColor"
+        >
+          <defs>
+            <mask id={`${maskId}-static`} maskUnits="userSpaceOnUse">
+              <rect width="200" height="200" fill="#fff" />
+              <circle cx="76" cy="108" r="15" fill="#000" />
+              <circle cx="124" cy="108" r="15" fill="#000" />
+              <path d={BEAK} fill="#000" />
+            </mask>
+          </defs>
+          <path d={HEAD} mask={`url(#${maskId}-static)`} />
+        </svg>
+      )}
+    </span>
+  )
+}
+
+<script>
+  // Pupils ease toward the pointer. SMIL keeps animating r (the blink)
+  // while cx/cy are driven here, so a gazing owl still blinks.
+  const slots = document.querySelectorAll<HTMLElement>('[data-wis-gaze]')
+  const fine = window.matchMedia('(pointer: fine)').matches
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  if (slots.length > 0 && fine && !reduced) {
+    const MAX_X = 8
+    const MAX_Y = 6
+    let targetX = 0
+    let targetY = 0
+    let currentX = 0
+    let currentY = 0
+    let raf = 0
+
+    const apply = () => {
+      currentX += (targetX - currentX) * 0.08
+      currentY += (targetY - currentY) * 0.08
+      for (const slot of slots) {
+        for (const pupil of slot.querySelectorAll('[data-pupil]')) {
+          const baseX = pupil.getAttribute('data-pupil') === 'l' ? 76 : 124
+          pupil.setAttribute('cx', String(baseX + currentX))
+          pupil.setAttribute('cy', String(108 + currentY))
+        }
+      }
+      if (Math.abs(targetX - currentX) > 0.01 || Math.abs(targetY - currentY) > 0.01) {
+        raf = requestAnimationFrame(apply)
+      } else {
+        raf = 0
+      }
+    }
+
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        const slot = slots[0]
+        if (!slot) return
+        const rect = slot.getBoundingClientRect()
+        const cx = rect.left + rect.width / 2
+        const cy = rect.top + rect.height / 2
+        targetX = Math.max(-1, Math.min(1, (e.clientX - cx) / 420)) * MAX_X
+        targetY = Math.max(-1, Math.min(1, (e.clientY - cy) / 420)) * MAX_Y
+        if (!raf) raf = requestAnimationFrame(apply)
+      },
+      { passive: true },
+    )
+  }
+</script>
+
+<style>
+  .wis-mark-slot {
+    display: inline-block;
+  }
+
+  .wis-mark-slot svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .wm-static-fallback {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wm-animated {
+      display: none;
+    }
+
+    .wm-static-fallback {
+      display: block;
+    }
+  }
+</style>

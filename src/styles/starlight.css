@@ -1,0 +1,60 @@
+/* Starlight theme overrides: dark-only, lila accents, Geist type.
+   Fully themed alongside the docs content. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  --sl-font: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --sl-font-mono: 'Geist Mono', ui-monospace, monospace;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #382575;
+  --sl-color-accent: #8d7be3;
+  --sl-color-accent-high: #c4b5fd;
+  --sl-color-white: #eeedf0;
+  --sl-color-gray-1: #d8d7e0;
+  --sl-color-gray-2: #a4a3b2;
+  --sl-color-gray-3: #8b8a99;
+  --sl-color-gray-4: #44434f;
+  --sl-color-gray-5: #2a2a33;
+  --sl-color-gray-6: #15151d;
+  --sl-color-black: #0a0a10;
+  --sl-color-bg-nav: #0e0e16;
+  --sl-color-bg-sidebar: #0a0a10;
+
+  --sl-color-hairline-shade: rgba(238, 237, 240, 0.07);
+  --sl-color-text-accent: #b7a6f1;
+}
+
+/* The owl logo links home; give it the periwinkle the brand uses. */
+.site-title svg,
+a.site-title svg {
+  color: #8f99fb;
+}
+
+/* Tie callouts (asides) to the lila accent rather than Starlight's blues. */
+.starlight-aside--note {
+  --sl-color-asides-text-accent: #b7a6f1;
+  --sl-color-asides-border: #5b3fbc;
+  background-color: rgba(141, 123, 227, 0.06);
+}
+
+.starlight-aside--tip {
+  --sl-color-asides-text-accent: #c4b5fd;
+  --sl-color-asides-border: #7257d6;
+  background-color: rgba(141, 123, 227, 0.06);
+}
+
+/* Inline code in the lila family, set on the page surface. */
+:root[data-theme='dark'] {
+  --sl-color-bg-inline-code: rgba(141, 123, 227, 0.1);
+}
+
+.sl-markdown-content code:not(:where(.expressive-code *)) {
+  color: #ddd6fe;
+}
+
+/* Table headers pick up the accent so reference tables read cleanly. */
+.sl-markdown-content th {
+  color: #c4b5fd;
+}

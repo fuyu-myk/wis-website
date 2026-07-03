@@ -1,0 +1,138 @@
+---
+import '@/styles/site.css'
+import Background from '@/components/Background.astro'
+import Nav from '@/components/Nav.astro'
+import Hero from '@/components/Hero.astro'
+import EyeStateStrip from '@/components/EyeStateStrip.astro'
+import FeatureGrid from '@/components/FeatureGrid.astro'
+import Privacy from '@/components/Privacy.astro'
+import Engineering from '@/components/Engineering.astro'
+import Downloads from '@/components/Downloads.astro'
+import Footer from '@/components/Footer.astro'
+
+const base = import.meta.env.BASE_URL
+const title = 'wis · sees everything. tells nothing.'
+const description =
+  'wis is an open-source browser for macos: fast and light, safe and yours. native webkit, tracker blocking, tor built in, workspaces, split panes.'
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <script is:inline>
+      document.documentElement.classList.add('js')
+    </script>
+  </head>
+  <body class="grain">
+    <Background />
+    <Nav />
+    <main>
+      <Hero />
+      <EyeStateStrip />
+      <FeatureGrid />
+      <Privacy />
+      <Engineering />
+      <Downloads />
+    </main>
+    <Footer />
+    <script>
+      const els = document.querySelectorAll<HTMLElement>('[data-reveal]')
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (reduced || !('IntersectionObserver' in window)) {
+        els.forEach((el) => el.classList.add('is-in'))
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-in')
+                observer.unobserve(entry.target)
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.1 },
+        )
+        els.forEach((el) => observer.observe(el))
+      }
+
+      // Spotlight hover: cards highlight where the pointer is.
+      const fine = window.matchMedia('(pointer: fine)').matches
+      if (fine) {
+        for (const card of document.querySelectorAll<HTMLElement>('.card-g')) {
+          card.addEventListener(
+            'pointermove',
+            (e) => {
+              const rect = card.getBoundingClientRect()
+              card.style.setProperty('--mx', `${e.clientX - rect.left}px`)
+              card.style.setProperty('--my', `${e.clientY - rect.top}px`)
+            },
+            { passive: true },
+          )
+        }
+      }
+
+      // Magnetic CTAs: buttons lean a few pixels toward the pointer.
+      if (fine && !reduced) {
+        for (const el of document.querySelectorAll<HTMLElement>('.btn, .dl-pill')) {
+          el.addEventListener(
+            'pointermove',
+            (e) => {
+              const rect = el.getBoundingClientRect()
+              const dx = e.clientX - (rect.left + rect.width / 2)
+              const dy = e.clientY - (rect.top + rect.height / 2)
+              el.style.transform = `translate(${dx * 0.12}px, ${dy * 0.22}px)`
+            },
+            { passive: true },
+          )
+          el.addEventListener('pointerleave', () => {
+            el.style.transform = ''
+          })
+        }
+      }
+
+      // Decode-in: stat values settle from scrambled letters, knowledge
+      // arriving. Runs once per element, skipped under reduced motion.
+      const decodes = document.querySelectorAll<HTMLElement>('[data-decode]')
+      if (decodes.length > 0 && !reduced && 'IntersectionObserver' in window) {
+        const charset = 'abcdefghijklmnopqrstuvwxyz'
+        const decodeObserver = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue
+              decodeObserver.unobserve(entry.target)
+              const el = entry.target as HTMLElement
+              const text = el.textContent ?? ''
+              el.style.minWidth = `${el.offsetWidth}px`
+              el.style.display = 'inline-block'
+              let frame = 0
+              const frames = Math.max(14, text.length * 2.5)
+              const step = () => {
+                frame += 1
+                const settled = Math.floor((frame / frames) * text.length)
+                el.textContent = [...text]
+                  .map((c, i) => (i < settled || c === ' ' ? c : charset[Math.floor(Math.random() * charset.length)]))
+                  .join('')
+                if (settled < text.length) {
+                  setTimeout(step, 36)
+                } else {
+                  el.textContent = text
+                }
+              }
+              step()
+            }
+          },
+          { threshold: 0.5 },
+        )
+        decodes.forEach((el) => decodeObserver.observe(el))
+      }
+    </script>
+  </body>
+</html>
