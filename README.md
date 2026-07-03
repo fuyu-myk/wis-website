@@ -31,7 +31,7 @@ The repository of the Wis browser can be found at [**fuyu-myk/wis-browser**](htt
 
 ## Run locally
 
-**Prerequisites:** Node 20+ and [pnpm](https://pnpm.io).
+**Prerequisites:** Node 22.12+ and [pnpm](https://pnpm.io).
 
 ```bash
 pnpm install
@@ -44,6 +44,10 @@ pnpm dev          # http://localhost:4321
 pnpm build        # production build (dist/)
 pnpm preview      # serve the production build
 ```
+
+## Deploy
+
+Pushing to `main` triggers [deploy.yml](.github/workflows/deploy.yml), which builds the site and publishes it to GitHub Pages. `SITE_URL` and `SITE_BASE` are derived from the repo's Pages configuration, so a custom domain later needs no config changes. One-time setup: repo **Settings → Pages → Source: "GitHub Actions"**.
 
 ## Structure
 

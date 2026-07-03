@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import { REPO_URL } from './src/lib/site.ts'
+import { rehypeBaseLinks } from './src/lib/rehype-base-links.ts'
 
 // GitHub Pages serves project sites under https://<owner>.github.io/<repo>/.
 // The deploy workflow sets SITE_URL and SITE_BASE; local dev runs at root.
@@ -11,6 +12,9 @@ const base = process.env.SITE_BASE ?? '/'
 export default defineConfig({
   site,
   base,
+  markdown: {
+    rehypePlugins: [rehypeBaseLinks(base)],
+  },
   integrations: [
     starlight({
       title: 'wis',
