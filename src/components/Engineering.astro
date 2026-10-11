@@ -4,7 +4,7 @@ const limitationsUrl = `${base}docs/reference/known-limitations/`
 
 const stats = [
   { k: 'bundled engine', v: 'none' },
-  { k: 'rendering', v: 'system webkit' },
+  { k: 'rendering', v: 'system webview' },
   { k: 'engine updates', v: 'patched by the os' },
   { k: 'unused features', v: 'zero cost' },
 ]
@@ -15,9 +15,10 @@ const stats = [
     <p class="eyebrow" data-reveal>04 &middot; engineering</p>
     <h2 class="section-title" data-reveal>light, because there is<br /><em>nothing to carry</em>.</h2>
     <p class="section-lede" data-reveal>
-      wis renders with the webkit engine your mac already runs, the same one
-      behind safari. no bundled chromium means a tiny download, less memory,
-      safari-class speed and battery, and an engine the os keeps patched.
+      wis renders with the engine your os already ships: webkit on macos and
+      linux, webview2 on windows. no bundled chromium means a tiny download,
+      less memory, safari-class speed and battery on the mac, and an engine
+      the os keeps patched.
       the shell is rust end to end.
     </p>
     <div class="stats">

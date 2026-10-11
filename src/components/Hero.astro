@@ -6,7 +6,7 @@ const docsUrl = `${base}docs/`
 
 const stats = [
   { k: 'bundled engine', v: 'none' },
-  { k: 'rendering', v: 'system webkit' },
+  { k: 'rendering', v: 'system webview' },
   { k: 'telemetry', v: 'none' },
   { k: 'tor', v: 'built in' },
 ]
@@ -18,7 +18,7 @@ const stats = [
       <WisMark variant="blink" gaze size={92} label="wis owl" />
     </div>
     <p class="pill mono" data-reveal style="transition-delay:60ms">
-      open source &middot; webkit-native &middot; macos-first
+      open source &middot; system webview &middot; macos-first
     </p>
     <h1 data-reveal style="transition-delay:120ms">
       fast and light.<br />
@@ -30,12 +30,12 @@ const stats = [
       </em>
     </h1>
     <p class="lede" data-reveal style="transition-delay:180ms">
-      wis is an open-source browser built on the engine your mac already
-      runs: a tiny bundle that sips memory, blocks trackers by default, and
+      wis is an open-source browser built on the engine your os already
+      ships: a tiny bundle that sips memory, blocks trackers by default, and
       bends to how you browse. workspaces, split panes, your keys, your rules.
     </p>
     <div class="cta-row" data-reveal style="transition-delay:240ms">
-      <a class="btn btn-fill" href="#download">download for macos</a>
+      <a class="btn btn-fill" href="#download">download wis</a>
       <a class="btn btn-ghost" href={docsUrl}>read the docs</a>
     </div>
   </div>
